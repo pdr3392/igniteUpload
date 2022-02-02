@@ -52,12 +52,24 @@ export default function Home(): JSX.Element {
   });
 
   const formattedData = useMemo(() => {
-    // TODO FORMAT AND FLAT DATA ARRAY
     if (data) {
       const { data: pageData, after } = data.pages[0].data;
+      return {
+        pageData,
+        after,
+      };
     }
+
+    return null;
   }, [data]);
-  // TODO RENDER ERROR SCREEN
+
+  function handleFetchNextPage() {
+    const nextPageData = fetchNextPage();
+
+    console.log(nextPageData);
+
+    return nextPageData;
+  }
 
   return (
     <>
@@ -69,8 +81,16 @@ export default function Home(): JSX.Element {
         <Error />
       ) : (
         <Box maxW={1120} px={20} mx="auto" my={20}>
-          <CardList cards={formattedData} />
-          {/* TODO RENDER LOAD MORE BUTTON IF DATA HAS NEXT PAGE */}
+          <CardList cards={formattedData?.pageData} />
+          {formattedData?.after && (
+            <Button
+              mt="2.5rem"
+              onClick={() => handleFetchNextPage()}
+              colorScheme="orange"
+            >
+              Carregar mais
+            </Button>
+          )}
         </Box>
       )}
     </>
