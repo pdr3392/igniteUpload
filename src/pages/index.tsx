@@ -1,5 +1,5 @@
 import { Button, Box } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useInfiniteQuery } from 'react-query';
 
 import { Header } from '../components/Header';
@@ -16,11 +16,6 @@ interface DataProps {
   id: string;
 }
 
-interface ReturnDataProps {
-  data: DataProps[];
-  after: null | string;
-}
-
 interface PageCleansingProps {
   data: {
     data: DataProps[];
@@ -29,16 +24,25 @@ interface PageCleansingProps {
 }
 
 interface DataCleansingProps {
-  pages: PageCleansingProps[];
+  data: { pages: PageCleansingProps[] };
+  isLoading: boolean;
+  isError: boolean;
+  isFetchingNextPage: boolean;
+  hasNextPage?: boolean;
+  fetchNextPage?: () => Promise<DataCleansingProps>;
 }
 
 export default function Home(): JSX.Element {
-  const [loading, setLoading] = useState(true);
-
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   const fetchImages = async ({ pageParam = 0 }) =>
     // eslint-disable-next-line no-return-await
-    await api.get(`/api/images?cursor=${pageParam}`).then(res => res);
+    await api
+      .get(`/api/images`, {
+        params: {
+          after: pageParam,
+        },
+      })
+      .then(res => res);
 
   const {
     data,
@@ -47,29 +51,14 @@ export default function Home(): JSX.Element {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  }: { data: DataCleansingProps } = useInfiniteQuery('images', fetchImages, {
-    getNextPageParam: (lastPage, pages) => lastPage.nextCursor,
+  }: DataCleansingProps = useInfiniteQuery('images', fetchImages, {
+    getNextPageParam: lastPage => lastPage.data.after,
   });
 
   const formattedData = useMemo(() => {
-    if (data) {
-      const { data: pageData, after } = data.pages[0].data;
-      return {
-        pageData,
-        after,
-      };
-    }
-
-    return null;
+    // eslint-disable-next-line no-shadow
+    return data?.pages?.map(({ data }) => data.data).flat();
   }, [data]);
-
-  function handleFetchNextPage() {
-    const nextPageData = fetchNextPage();
-
-    console.log(nextPageData);
-
-    return nextPageData;
-  }
 
   return (
     <>
@@ -81,14 +70,14 @@ export default function Home(): JSX.Element {
         <Error />
       ) : (
         <Box maxW={1120} px={20} mx="auto" my={20}>
-          <CardList cards={formattedData?.pageData} />
-          {formattedData?.after && (
+          <CardList cards={formattedData} />
+          {hasNextPage && (
             <Button
               mt="2.5rem"
-              onClick={() => handleFetchNextPage()}
+              onClick={() => fetchNextPage()}
               colorScheme="orange"
             >
-              Carregar mais
+              {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
             </Button>
           )}
         </Box>
