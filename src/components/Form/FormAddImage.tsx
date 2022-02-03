@@ -1,6 +1,6 @@
 import { Box, Button, Stack, useToast } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 
 import { api } from '../../services/api';
@@ -19,12 +19,47 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
   const formValidations = {
     image: {
       // TODO REQUIRED, LESS THAN 10 MB AND ACCEPTED FORMATS VALIDATIONS
+      required: {
+        value: true,
+        message: 'Arquivo obrigatório',
+      },
+      validate: {
+        lessThan10MB: {
+          value: (file: File) => file?.size < 10000000,
+          message: 'O arquivo deve ser menor que 10MB',
+        },
+        acceptedFormats: {
+          value: (file: File) =>
+            ['image/jpeg', 'image/png', 'image/gif'].includes(file.type),
+          message: 'Somente são aceitos arquivos PNG, JPEG e GIF',
+        },
+      },
     },
     title: {
       // TODO REQUIRED, MIN AND MAX LENGTH VALIDATIONS
+      required: {
+        value: true,
+        message: 'Título obrigatório',
+      },
+      minLength: {
+        value: 2,
+        message: 'Mínimo de 2 caracteres',
+      },
+      maxLength: {
+        value: 20,
+        message: 'Máximo de 20 caracteres',
+      },
     },
     description: {
       // TODO REQUIRED, MAX LENGTH VALIDATIONS
+      required: {
+        value: true,
+        message: 'Descrição obrigatória',
+      },
+      maxLength: {
+        value: 65,
+        message: 'Máximo de 65 caracteres',
+      },
     },
   };
 
@@ -36,14 +71,8 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
     }
   );
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState,
-    setError,
-    trigger,
-  } = useForm();
+  const { register, handleSubmit, reset, formState, setError, trigger } =
+    useForm();
   const { errors } = formState;
 
   const onSubmit = async (data: Record<string, unknown>): Promise<void> => {
@@ -58,6 +87,10 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
     }
   };
 
+  useEffect(() => {
+    console.log(errors?.image?.message);
+  }, [errors]);
+
   return (
     <Box as="form" width="100%" onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={4}>
@@ -68,7 +101,9 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
           setError={setError}
           trigger={trigger}
           // TODO SEND IMAGE ERRORS
+          error={errors?.image?.message}
           // TODO REGISTER IMAGE INPUT WITH VALIDATIONS
+          {...register('image', formValidations.image)}
         />
 
         <TextInput
