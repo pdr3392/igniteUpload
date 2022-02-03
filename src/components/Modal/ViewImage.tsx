@@ -5,7 +5,6 @@ import {
   ModalFooter,
   ModalBody,
   Image,
-  Text,
   Link,
 } from '@chakra-ui/react';
 
