@@ -36,9 +36,7 @@ export function ModalViewImage({
 
         <ModalFooter bgColor="pGray.800" justifyContent="flex-start">
           <Link href={imgUrl} isExternal>
-            <Text fontFamily="Roboto" fontSize="0.875rem" color="gray.50">
-              Abrir original
-            </Text>
+            Abrir original
           </Link>
         </ModalFooter>
       </ModalContent>
