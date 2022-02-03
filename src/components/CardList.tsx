@@ -1,10 +1,4 @@
-import {
-  Button,
-  Grid,
-  GridItem,
-  SimpleGrid,
-  useDisclosure,
-} from '@chakra-ui/react';
+import { GridItem, SimpleGrid, useDisclosure } from '@chakra-ui/react';
 import { useState } from 'react';
 import { Card } from './Card';
 import { ModalViewImage } from './Modal/ViewImage';
@@ -22,27 +16,34 @@ interface CardsProps {
 }
 
 export function CardList({ cards }: CardsProps): JSX.Element {
-  // TODO MODAL USEDISCLOSURE
-
-  // TODO SELECTED IMAGE URL STATE
-
-  // TODO FUNCTION HANDLE VIEW IMAGE
+  const [currentUrl, setCurrentUrl] = useState('');
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  function doNothing() {
-    return '';
+  function setImageModalOpen(
+    // eslint-disable-next-line no-shadow
+    onOpen: () => void,
+    imgUrl: string
+  ) {
+    setCurrentUrl(imgUrl);
+    onOpen();
   }
 
   return (
     <>
-      <Grid maxW="864px" gap="40px" templateColumns="repeat(3, 1fr)">
+      <SimpleGrid maxW="864px" gap="40px" templateColumns="repeat(3, 1fr)">
         {cards?.map(card => (
           <GridItem key={card.id} w="288px" h="293px">
-            <Card data={card} viewImage={() => doNothing()} />
+            <Card
+              data={card}
+              viewImage={() => setImageModalOpen(() => onOpen(), card.url)}
+            />
           </GridItem>
         ))}
-      </Grid>
-      {/* TODO MODALVIEWIMAGE */}
+      </SimpleGrid>
+      {isOpen && (
+        <ModalViewImage isOpen={isOpen} onClose={onClose} imgUrl={currentUrl} />
+      )}
     </>
   );
 }
